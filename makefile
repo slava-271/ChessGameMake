@@ -9,6 +9,8 @@ BUILD_DIR = build
 AUTOGEN_DIR = build/autogen
 TARGET = $(BUILD_DIR)/ChessGameMake
 
+CXX ?= g++
+
 SOURCES = main.cpp mainwindow.cpp bitboard.cpp chessboard.cpp
 HEADERS = mainwindow.h bitboard.h chessboard.h
 MOC_HEADERS = mainwindow.h chessboard.h
@@ -44,9 +46,13 @@ all: $(TARGET)
 
 build: all
 
+directories: 
+	mkdir -p $(AUTOGEN_DIR)
+
+
 $(TARGET): $(ALL_OBJECTS)
 	mkdir -p $(BUILD_DIR)
-	g++ $(LFLAGS) $^ -o $@ $(USED_LIBS)
+	$(CXX) $(LFLAGS) $^ -o $@ $(USED_LIBS)
 
 codegen: $(CODEGEN_SOURCES)
 
@@ -55,21 +61,17 @@ build-debug: $(TARGET)
 build-release: $(CXXFLAGS) += -O2 -DNDEBUG  -DQT_NO_DEBUG
 build-release: $(TARGET)
 
-$(AUTOGEN_DIR)/moc_%.cpp: %.h
-	mkdir -p $(AUTOGEN_DIR)
+$(AUTOGEN_DIR)/moc_%.cpp: %.h | directories
 	$(MOC) $< -o $@
 
-$(AUTOGEN_DIR)/qrc_%.cpp: %.qrc
-	mkdir -p $(AUTOGEN_DIR)
+$(AUTOGEN_DIR)/qrc_%.cpp: %.qrc | directories
 	$(RCC) $< -o $@
 
-$(BUILD_DIR)/%.o: %.cpp
-	mkdir -p $(BUILD_DIR)
-	g++ $(CXXFLAGS) $(QT_HEADERS)  -c $< -o $@ 
+$(BUILD_DIR)/%.o: %.cpp | directories
+	$(CXX) $(CXXFLAGS) $(QT_HEADERS)  -c $< -o $@ 
 
-$(BUILD_DIR)/%.o: $(AUTOGEN_DIR)/%.cpp
-	mkdir -p $(BUILD_DIR)
-	g++ $(CXXFLAGS) $(QT_HEADERS)  -c $< -o $@ 	
+$(BUILD_DIR)/%.o: $(AUTOGEN_DIR)/%.cpp | directories
+	$(CXX) $(CXXFLAGS) $(QT_HEADERS)  -c $< -o $@ 	
 
 
 clean: 
@@ -77,6 +79,8 @@ clean:
 
 DEPENDS = $($(ALL_OBJECTS:.o=.d))
 -include $(DEPENDS)
+
+.PHONY: all clean build build-release build-debug codegen
 
 
 
