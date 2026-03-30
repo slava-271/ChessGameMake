@@ -1,5 +1,3 @@
-QT_PATH ?= /home/slava/Qt/6.10.2/gcc_64
-
 QT_LIBS = $(QT_PATH)/lib
 
 QT_INCLUDE = $(QT_PATH)/include
